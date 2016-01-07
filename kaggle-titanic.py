@@ -1,34 +1,11 @@
 import pandas as pd
 from sklearn.cross_validation import KFold
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.cross_validation import train_test_split
 
-#define crossvalidation function
-def crossValidate(features, target, classifier, k_fold, r_state=None) :
-    # derive a set of (random) training and testing indices
-    k_fold_indices = KFold(len(features), n_folds=k_fold,
-                           shuffle=True, random_state=r_state)
-    
-    # for each set of training and testing indices 
-    # train the classifier, and score the results
-    k_score_total = 0
-    for train_indices, test_indices in k_fold_indices :
-
-        model = classifier.fit(features[train_indices],
-                           target[train_indices])
-
-        k_score = model.score(features[test_indices],
-                              target[test_indices])
-
-        k_score_total = k_score_total + k_score
-
-    # return the average accuracy
-    return k_score_total/k_fold
-
 # import data
-df = pd.read_csv('train.csv')
-test = pd.read_csv('test.csv')
+df = pd.read_csv('data/train.csv')
+test = pd.read_csv('data/test.csv')
 
 # clean the data
 median_age = df['Age'].median()
@@ -61,7 +38,7 @@ features = X.values
 target = y.values
 
 # Initialize the model
-model = RandomForestClassifier(25)
+model = RandomForestClassifier(150, random_state=0)
 
 
 #  Split the features and the target into a Train and a Test subsets.  
@@ -70,7 +47,6 @@ X_train, X_test, y_train, y_test = train_test_split(X, y,
 
 # Train the model
 model.fit(X_train, y_train)
-
 
 # Calculate the model score
 my_score = model.score(X_test, y_test)
@@ -92,3 +68,25 @@ submission = pd.DataFrame({
     })
 
 submission.to_csv('submission.csv', index=False)
+
+#define crossvalidation function
+def crossValidate(features, target, classifier, k_fold, r_state=None) :
+    # derive a set of (random) training and testing indices
+    k_fold_indices = KFold(len(features), n_folds=k_fold,
+                           shuffle=True, random_state=r_state)
+    
+    # for each set of training and testing indices 
+    # train the classifier, and score the results
+    k_score_total = 0
+    for train_indices, test_indices in k_fold_indices :
+
+        model = classifier.fit(features[train_indices],
+                           target[train_indices])
+
+        k_score = model.score(features[test_indices],
+                              target[test_indices])
+
+        k_score_total = k_score_total + k_score
+
+    # return the average accuracy
+    return k_score_total/k_fold
